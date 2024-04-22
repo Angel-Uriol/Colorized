@@ -1,5 +1,7 @@
 import struct
-
+import time
+import board
+import neopixel
 
 # Class to represent a pixel
 class Pixel:
@@ -213,9 +215,73 @@ class BMPImage:
 
 # Example usage
 bmp_image = BMPImage()
-if not bmp_image.load_image("Raw_Blue.bmp"):
+if not bmp_image.load_image("Italian_flag.bmp"):
     exit(1)
 
+## If LED strip organization is: First Top, then right, then botton and finally left
+#Based on 21" monitor has a perimeter of 63.2
+size_of_monitor = 21
+num_sections = int(size_of_monitor*2.333)+1
+top_monitor = int(num_sections*0.30)+1
+bottom_monitor = int(num_sections*0.30)+1
+left_monitor = int(num_sections*0.20)
+right_monitor = int(num_sections*0.20)
+counter = 0
+########################################################################################################################
+##Top first 21 inches / 1.31
+
+print("Num of LEDs in top: ", num_sections)
+pixels1 = [[] for _ in range(num_sections)]
+top_horizontal_line = bmp_image.calculate_average_colors_of_top_horizontal_line(top_monitor)
+print("Top Horizontal Line: ")
+for i, pixel in enumerate(top_horizontal_line):
+    pixels1[i] = (pixel.red, pixel.green, pixel.blue)
+    print("R={}, G={}, B={}".format(pixel.red, pixel.green, pixel.blue))
+counter = counter + top_monitor
+########################################################################################################################
+# Now Right
+start_x = (bmp_image.get_width() // 10) * 9 #starts last 1/10
+precision = bmp_image.get_width() - 6 # removes last 6 pixels
+end_x = precision
+right_vertical_line = bmp_image.calculate_average_colors_of_vertical_part_with_subsections(start_x, end_x, right_monitor)
+print("Right Vertical Line:")
+for i, pixel in enumerate(right_vertical_line):
+    pixels1[i+counter] = (pixel.red, pixel.green, pixel.blue)
+    print("R={}, G={}, B={}".format(pixel.red, pixel.green, pixel.blue))
+counter = counter + right_monitor
+########################################################################################################################
+# Now bottom
+bottom_horizontal_line = bmp_image.calculate_average_colors_of_bottom_horizontal_line(bottom_monitor)
+print("Bottom Horizontal Line:")
+for i, pixel in enumerate(reversed(bottom_horizontal_line)):
+    pixels1[i+counter] = (pixel.red, pixel.green, pixel.blue)
+    print("R={}, G={}, B={}".format(pixel.red, pixel.green, pixel.blue))
+counter = counter + bottom_monitor
+########################################################################################################################
+# Now left
+start_x = 28
+precision = bmp_image.get_width() // 10
+end_x = precision
+left_vertical_line = bmp_image.calculate_average_colors_of_vertical_part_with_subsections(start_x, end_x, left_monitor)
+print("Left Vertical Line:")
+for i, pixel in enumerate(reversed(left_vertical_line)):
+    pixels1[i+counter] = (pixel.red, pixel.green, pixel.blue)
+    print("R={}, G={}, B={}".format(pixel.red, pixel.green, pixel.blue))
+counter = counter + left_monitor
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 print("Image Width:", bmp_image.get_width())
 print("Image Height:", bmp_image.get_height())
 
@@ -270,3 +336,4 @@ left_vertical_line = bmp_image.calculate_average_colors_of_vertical_part_with_su
 print("Left Vertical Line:")
 for pixel in left_vertical_line:
     print("R={}, G={}, B={}".format(pixel.red, pixel.green, pixel.blue))
+"""
